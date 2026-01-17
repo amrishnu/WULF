@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WULF EV - Harvesting the Wind</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Auth Screen */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .auth-screen.hidden {
+            display: none;
+        }
+        
+        .auth-container {
+            background: rgba(26, 26, 46, 0.9);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 30px 80px rgba(0, 255, 157, 0.3);
+            text-align: center;
+        }
+        
+        .auth-logo {
+            width: 200px;
+            margin: 0 auto 30px;
+        }
+        
+        .auth-title {
+            font-size: 2em;
+            color: #00ff9d;
+            margin-bottom: 10px;
+        }
+        
+        .auth-subtitle {
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .auth-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-input:focus {
+            outline: none;
+            border-color: #00ff9d;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+        }
+        
+        .auth-input::placeholder {
+            color: #666;
+        }
+        
+        .auth-button {
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            color: #000;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 255, 157, 0.4);
+        }
+        
+        .auth-toggle {
+            margin-top: 20px;
+            color: #aaa;
+        }
+        
+        .auth-toggle a {
+            color: #00ff9d;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-error {
+            background: rgba(255, 80, 80, 0.2);
+            border: 1px solid #ff5050;
+            color: #ff8080;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .auth-error.show {
+            display: block;
+        }
+        
+        .auth-success {
+            background: rgba(0, 255, 157, 0.2);
+            border: 1px solid #00ff9d;
+            color: #00ff9d;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .auth-success.show {
+            display: block;
+        }
+        
+        .main-content {
+            display: none;
+        }
+        
+        .main-content.visible {
+            display: block;
+        }
+        
+        /* User Profile Header */
+        .user-profile-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .profile-button {
+            background: rgba(26, 26, 46, 0.9);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            border-radius: 50px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+        
+        .profile-button:hover {
+            border-color: #00ff9d;
+            background: rgba(26, 26, 46, 1);
+            box-shadow: 0 5px 20px rgba(0, 255, 157, 0.3);
+        }
+        
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            font-size: 1.2em;
+        }
+        
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .profile-name {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: #00ff9d;
+        }
+        
+        .profile-email {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: fixed;
+            top: 80px;
+            right: 40px;
+            background: rgba(26, 26, 46, 0.98);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 300px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+        
+        .profile-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .profile-dropdown-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+            margin-bottom: 15px;
+        }
+        
+        .profile-dropdown-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            font-size: 1.8em;
+        }
+        
+        .profile-dropdown-info h3 {
+            color: #00ff9d;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        
+        .profile-dropdown-info p {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .profile-stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .profile-stat-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #00ff9d;
+        }
+        
+        .profile-stat-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .profile-action-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.95em;
+        }
+        
+        .profile-action-btn:hover {
+            background: rgba(0, 255, 157, 0.1);
+            border-color: #00ff9d;
+        }
+        
+        .profile-action-btn.logout {
+            background: rgba(255, 80, 80, 0.2);
+            border-color: rgba(255, 80, 80, 0.3);
+            color: #ff8080;
+        }
+        
+        .profile-action-btn.logout:hover {
+            background: rgba(255, 80, 80, 0.3);
+            border-color: #ff5050;
+        }
+        
+        @media (max-width: 768px) {
+            .user-profile-bar {
+                padding: 15px 20px;
+            }
+            .profile-dropdown {
+                right: 20px;
+                left: 20px;
+                min-width: auto;
+            }
+            .profile-info {
+                display: none;
+            }
+        }
+        
+        section {
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(0,255,157,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .logo {
+            width: 300px;
+            height: auto;
+            margin-bottom: 20px;
+            z-index: 1;
+            filter: drop-shadow(0 0 30px rgba(0,255,157,0.5));
+        }
+        
+        .logo img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .tagline {
+            font-size: 1.2em;
+            color: #00ff9d;
+            margin-bottom: 10px;
+            z-index: 1;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            z-index: 1;
+            line-height: 1.2;
+        }
+        
+        .hero h2 {
+            font-size: 1.5em;
+            color: #aaa;
+            font-weight: 300;
+            margin-bottom: 50px;
+            z-index: 1;
+        }
+        
+        .hero-image {
+            max-width: 1000px;
+            width: 90%;
+            margin: 30px auto;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0,255,157,0.3);
+            z-index: 1;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            color: #000;
+            padding: 18px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,255,157,0.4);
+        }
+        
+        /* Gallery Section */
+        .gallery {
+            background: #0a0a0a;
+            padding: 100px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(0,255,157,0.2);
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            border-color: #00ff9d;
+            box-shadow: 0 30px 60px rgba(0,255,157,0.3);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .gallery-item-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+            padding: 30px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover .gallery-item-overlay {
+            transform: translateY(0);
+        }
+        
+        .gallery-item-overlay h3 {
+            color: #00ff9d;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .gallery-item-overlay p {
+            color: #ccc;
+            font-size: 0.95em;
+        }
+        
+        .full-width-image {
+            width: 100%;
+            max-width: 1400px;
+            margin: 60px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,255,157,0.3);
+        }
+        
+        .full-width-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            padding: 100px 20px;
+        }
+        
+        .anatomy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .anatomy-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,255,157,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .anatomy-card:hover {
+            transform: translateY(-10px);
+            border-color: #00ff9d;
+            box-shadow: 0 20px 50px rgba(0,255,157,0.2);
+        }
+        
+        .anatomy-card h3 {
+            color: #00ff9d;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .anatomy-card p {
+            color: #ccc;
+            line-height: 1.8;
+        }
+        
+        /* Global Crisis Section */
+        .crisis {
+            background: #0a0a0a;
+            padding: 100px 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            border: 2px solid rgba(255,80,80,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: #ff5050;
+            transform: scale(1.05);
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: 900;
+            color: #ff5050;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            color: #ccc;
+        }
+        
+        /* Impact Section */
+        .impact {
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            padding: 100px 20px;
+        }
+        
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .impact-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border-left: 5px solid #00ff9d;
+        }
+        
+        .impact-card h3 {
+            color: #00ff9d;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .impact-card ul {
+            list-style: none;
+        }
+        
+        .impact-card li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #ccc;
+            line-height: 1.6;
+        }
+        
+        .impact-card li:before {
+            content: "✓ ";
+            color: #00ff9d;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        /* Founder Section */
+        .founder {
+            background: #0a0a0a;
+            padding: 100px 20px;
+        }
+        
+        .founder-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 60px;
+            align-items: center;
+        }
+        
+        .founder-image {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ff9d, #00b8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            font-weight: 900;
+            color: #000;
+        }
+        
+        .founder-details h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #00ff9d;
+        }
+        
+        .founder-details p {
+            color: #ccc;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .founder-details .role {
+            font-size: 1.3em;
+            color: #00b8ff;
+            margin-bottom: 20px;
+        }
+        
+        .vision-quote {
+            background: rgba(0,255,157,0.1);
+            padding: 25px;
+            border-left: 4px solid #00ff9d;
+            margin-top: 30px;
+            font-style: italic;
+            color: #fff;
+        }
+        
+        /* Footer */
+        footer {
+            background: #000;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid #222;
+        }
+        
+        footer p {
+            color: #666;
+        }
+        
+        .footer-tagline {
+            color: #00ff9d;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 768px) {
+            .logo { width: 200px; }
+            .hero h1 { font-size: 2em; }
+            .hero h2 { font-size: 1.2em; }
+            .section-title { font-size: 2em; }
+            .founder-content { grid-template-columns: 1fr; text-align: center; }
+            .founder-image { margin: 0 auto; }
+            .image-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <img src="https://img.sanishtech.com/u/f20352895b2b67b75ee7a4e3b64f5079.png" alt="WULF Logo" loading="lazy" style="max-width:100%;height:auto;">
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h2 class="auth-title">Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to explore the future of mobility</p>
+                <div class="auth-error" id="loginError"></div>
+                <form class="auth-form" onsubmit="handleLogin(event)">
+                    <input type="email" class="auth-input" placeholder="Email Address" required id="loginEmail">
+                    <input type="password" class="auth-input" placeholder="Password" required id="loginPassword">
+                    <button type="submit" class="auth-button">Sign In</button>
+                </form>
+                <p class="auth-toggle">Don't have an account? <a onclick="showSignup()">Sign Up</a></p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <h2 class="auth-title">Join WULF</h2>
+                <p class="auth-subtitle">Create an account to access exclusive content</p>
+                <div class="auth-error" id="signupError"></div>
+                <div class="auth-success" id="signupSuccess"></div>
+                <form class="auth-form" onsubmit="handleSignup(event)">
+                    <input type="text" class="auth-input" placeholder="Full Name" required id="signupName">
+                    <input type="email" class="auth-input" placeholder="Email Address" required id="signupEmail">
+                    <input type="password" class="auth-input" placeholder="Password (min 6 characters)" required id="signupPassword" minlength="6">
+                    <button type="submit" class="auth-button">Create Account</button>
+                </form>
+                <p class="auth-toggle">Already have an account? <a onclick="showLogin()">Sign In</a></p>
+            </div>
+            
+            <!-- Verification Form -->
+            <div id="verificationForm" style="display: none;">
+                <h2 class="auth-title">Verify Your Email</h2>
+                <p class="auth-subtitle">We've sent a 6-digit code to <span id="verifyEmail" style="color: #00ff9d;"></span></p>
+                <div class="auth-error" id="verifyError"></div>
+                <div class="auth-success" id="verifySuccess"></div>
+                <form class="auth-form" onsubmit="handleVerification(event)">
+                    <input type="text" class="auth-input" placeholder="Enter 6-digit code" required id="verificationCode" maxlength="6" pattern="\d{6}" style="text-align: center; font-size: 1.5em; letter-spacing: 8px;">
+                    <button type="submit" class="auth-button">Verify Email</button>
+                </form>
+                <p class="auth-toggle">Didn't receive code? <a onclick="resendCode()">Resend Code</a></p>
+                <p class="auth-toggle" style="margin-top: 10px;"><a onclick="showSignup()">← Back to Sign Up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+    
+    <!-- User Profile Bar -->
+    <div class="user-profile-bar">
+        <div class="profile-button" onclick="toggleProfileDropdown()">
+            <div class="profile-avatar" id="profileAvatarSmall"></div>
+            <div class="profile-info">
+                <div class="profile-name" id="profileNameSmall"></div>
+                <div class="profile-email" id="profileEmailSmall"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Dropdown -->
+    <div class="profile-dropdown" id="profileDropdown">
+        <div class="profile-dropdown-header">
+            <div class="profile-dropdown-avatar" id="profileAvatarLarge"></div>
+            <div class="profile-dropdown-info">
+                <h3 id="profileNameLarge"></h3>
+                <p id="profileEmailLarge"></p>
+            </div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-value" id="memberSince"></div>
+                <div class="profile-stat-label">Member Since</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-value">✓</div>
+                <div class="profile-stat-label">Verified</div>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <button class="profile-action-btn" onclick="alert('Profile settings coming soon!')">⚙️ Account Settings</button>
+            <button class="profile-action-btn logout" onclick="handleLogout()">🚪 Sign Out</button>
+        </div>
+    </div>
+    
+    <!-- Website Content -->
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="logo">
+            <img src="https://img.sanishtech.com/u/f20352895b2b67b75ee7a4e3b64f5079.png" alt="WULF Logo" loading="lazy" style="max-width:100%;height:auto;">
+        </div>
+        <div class="tagline">BE UNIQUE</div>
+        <h1>The World's First<br>Self-Harvesting Sports EV</h1>
+        <h2>Why wait for a charging station when the wind can charge you?</h2>
+        <div class="hero-image">
+            <svg viewBox="0 0 1200 675" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1a1a3e;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#0a0a1a;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="carGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00ff9d;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#00b8ff;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <!-- Sky -->
+                <rect fill="url(#skyGrad)" width="1200" height="675"/>
+                <!-- Buildings -->
+                <rect x="50" y="300" width="100" height="375" fill="#1a1a2e" opacity="0.8"/>
+                <rect x="200" y="250" width="120" height="425" fill="#1a1a2e" opacity="0.7"/>
+                <rect x="900" y="280" width="140" height="395" fill="#1a1a2e" opacity="0.8"/>
+                <rect x="1050" y="320" width="100" height="355" fill="#1a1a2e" opacity="0.7"/>
+                <!-- Building lights -->
+                <rect x="70" y="320" width="15" height="20" fill="#00ff9d" opacity="0.6"/>
+                <rect x="100" y="360" width="15" height="20" fill="#00ff9d" opacity="0.6"/>
+                <rect x="220" y="290" width="15" height="20" fill="#00b8ff" opacity="0.6"/>
+                <rect x="260" y="330" width="15" height="20" fill="#00ff9d" opacity="0.6"/>
+                <!-- Road -->
+                <rect x="0" y="500" width="1200" height="175" fill="#0a0a0a"/>
+                <rect x="0" y="585" width="1200" height="8" fill="#444" opacity="0.3"/>
+                <!-- Car body -->
+                <ellipse cx="600" cy="520" rx="280" ry="80" fill="url(#carGrad)" opacity="0.9"/>
+                <rect x="400" y="480" width="400" height="60" fill="url(#carGrad)" rx="30"/>
+                <!-- Windscreen -->
+                <path d="M 480 490 L 520 460 L 680 460 L 720 490 Z" fill="#00b8ff" opacity="0.4"/>
+                <!-- Wind turbine intakes (glowing) -->
+                <circle cx="450" cy="510" r="25" fill="#00ff9d" opacity="0.7"/>
+                <circle cx="750" cy="510" r="25" fill="#00ff9d" opacity="0.7"/>
+                <circle cx="440" cy="510" r="15" fill="#fff" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="760" cy="510" r="15" fill="#fff" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <!-- Wheels -->
+                <circle cx="450" cy="575" r="45" fill="#222" stroke="#00ff9d" stroke-width="3"/>
+                <circle cx="750" cy="575" r="45" fill="#222" stroke="#00ff9d" stroke-width="3"/>
+                <!-- Energy glow effect -->
+                <ellipse cx="600" cy="520" rx="300" ry="90" fill="none" stroke="#00ff9d" stroke-width="2" opacity="0.3">
+                    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
+                </ellipse>
+                <text x="600" y="650" font-family="Arial" font-size="24" fill="#00ff9d" text-anchor="middle" opacity="0.8">HARVESTING THE WIND</text>
+            </svg>
+        </div>
+        <button class="cta-button" onclick="document.querySelector('.gallery').scrollIntoView({behavior: 'smooth'})">Explore the Vision</button>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery">
+        <div class="container">
+            <h2 class="section-title">The WULF Vision</h2>
+            <p style="text-align: center; color: #aaa; font-size: 1.2em; max-width: 800px; margin: 0 auto 60px;">
+                Experience the revolutionary design and technology that makes WULF the future of sustainable mobility.
+            </p>
+            
+            <div class="image-grid">
+                <div class="gallery-item">
+                    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                        <rect fill="#1a1a2e" width="800" height="600"/>
+                        <!-- Car outline -->
+                        <ellipse cx="400" cy="350" rx="280" ry="100" fill="#0a0a0a" stroke="#00ff9d" stroke-width="3"/>
+                        <!-- Turbines -->
+                        <circle cx="200" cy="340" r="40" fill="#222" stroke="#00ff9d" stroke-width="3"/>
+                        <circle cx="600" cy="340" r="40" fill="#222" stroke="#00ff9d" stroke-width="3"/>
+                        <!-- Turbine blades (animated) -->
+                        <g transform="translate(200,340)">
+                            <line x1="0" y1="-30" x2="0" y2="30" stroke="#00ff9d" stroke-width="2"/>
+                            <line x1="-30" y1="0" x2="30" y2="0" stroke="#00ff9d" stroke-width="2"/>
+                        </g>
+                        <g transform="translate(600,340)">
+                            <line x1="0" y1="-30" x2="0" y2="30" stroke="#00ff9d" stroke-width="2"/>
+                            <line x1="-30" y1="0" x2="30" y2="0" stroke="#00ff9d" stroke-width="2"/>
+                        </g>
+                        <!-- Energy flow arrows -->
+                        <path d="M 200 380 L 350 450" stroke="#00ff9d" stroke-width="2" opacity="0.6" marker-end="url(#arrowhead)"/>
+                        <path d="M 600 380 L 450 450" stroke="#00ff9d" stroke-width="2" opacity="0.6"/>
+                        <!-- Battery pack -->
+                        <rect x="350" y="450" width="100" height="60" fill="#222" stroke="#00b8ff" stroke-width="2" rx="5"/>
+                        <text x="400" y="485" font-family="Arial" font-size="16" fill="#00b8ff" text-anchor="middle">BATTERY</text>
+                        <text x="400" y="150" font-family="Arial" font-size="28" fill="#00ff9d" text-anchor="middle">Mobile Microgrid System</text>
+                        <text x="400" y="190" font-family="Arial" font-size="16" fill="#aaa" text-anchor="middle">Integrated Energy Generation & Storage</text>
+                    </svg>
+                    <div class="gallery-item-overlay">
+                        <h3>Mobile Microgrid</h3>
+                        <p>Complete energy generation and management system integrated into the vehicle architecture</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="solarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:0.6" />
+                            </linearGradient>
+                        </defs>
+                        <rect fill="#1a1a2e" width="800" height="600"/>
+                        <!-- Sun -->
+                        <circle cx="650" cy="100" r="50" fill="#FFD700" opacity="0.8">
+                            <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Sun rays -->
+                        <line x1="650" y1="50" x2="650" y2="10" stroke="#FFD700" stroke-width="3" opacity="0.6"/>
+                        <line x1="700" y1="100" x2="740" y2="100" stroke="#FFD700" stroke-width="3" opacity="0.6"/>
+                        <line x1="690" y1="140" x2="720" y2="170" stroke="#FFD700" stroke-width="3" opacity="0.6"/>
+                        <!-- Car roof with solar panels -->
+                        <rect x="200" y="300" width="400" height="150" fill="#0a0a0a" stroke="#00ff9d" stroke-width="3" rx="20"/>
+                        <!-- Solar panel grid -->
+                        <rect x="220" y="320" width="180" height="110" fill="url(#solarGrad)" stroke="#333" stroke-width="2"/>
+                        <rect x="420" y="320" width="180" height="110" fill="url(#solarGrad)" stroke="#333" stroke-width="2"/>
+                        <!-- Grid lines -->
+                        <line x1="220" y1="375" x2="400" y2="375" stroke="#333" stroke-width="1"/>
+                        <line x1="310" y1="320" x2="310" y2="430" stroke="#333" stroke-width="1"/>
+                        <line x1="420" y1="375" x2="600" y2="375" stroke="#333" stroke-width="1"/>
+                        <line x1="510" y1="320" x2="510" y2="430" stroke="#333" stroke-width="1"/>
+                        <!-- Energy indicator -->
+                        <circle cx="400" cy="500" r="30" fill="#00ff9d" opacity="0.3">
+                            <animate attributeName="r" values="30;40;30" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="400" y="510" font-family="Arial" font-size="20" fill="#00ff9d" text-anchor="middle">⚡</text>
+                        <text x="400" y="150" font-family="Arial" font-size="28" fill="#00ff9d" text-anchor="middle">Solar-Integrated Design</text>
+                        <text x="400" y="190" font-family="Arial" font-size="16" fill="#aaa" text-anchor="middle">Advanced Solar + Wind + Battery System</text>
+                    </svg>
+                    <div class="gallery-item-overlay">
+                        <h3>Solar Integration</h3>
+                        <p>Advanced solar panels on roof combined with wind turbines and battery management</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://img.sanishtech.com/u/65969564510c53a4a5fe45925118026e.png" alt="WULF Car Anatomy" loading="lazy" style="max-width:100%;height:auto;">
+                    <div class="gallery-item-overlay">
+                        <h3>Transparent Anatomy</h3>
+                        <p>See the complete energy flow from turbines to batteries to wheels</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="full-width-image">
+                <svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="cityGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#16213e;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="wulfGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#00ff9d;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#00b8ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00ff9d;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect fill="url(#cityGrad)" width="1400" height="700"/>
+                    
+                    <!-- Futuristic city skyline -->
+                    <rect x="0" y="400" width="1400" height="300" fill="#000" opacity="0.3"/>
+                    <rect x="100" y="250" width="120" height="450" fill="#1a1a2e" opacity="0.9"/>
+                    <rect x="280" y="200" width="150" height="500" fill="#16213e" opacity="0.9"/>
+                    <rect x="500" y="280" width="100" height="420" fill="#1a1a2e" opacity="0.9"/>
+                    <rect x="900" y="220" width="140" height="480" fill="#16213e" opacity="0.9"/>
+                    <rect x="1100" y="260" width="120" height="440" fill="#1a1a2e" opacity="0.9"/>
+                    <rect x="1280" y="300" width="100" height="400" fill="#16213e" opacity="0.9"/>
+                    
+                    <!-- Building lights -->
+                    <rect x="120" y="280" width="20" height="25" fill="#00ff9d" opacity="0.7"/>
+                    <rect x="160" y="320" width="20" height="25" fill="#00b8ff" opacity="0.7"/>
+                    <rect x="300" y="240" width="20" height="25" fill="#00ff9d" opacity="0.7"/>
+                    <rect x="350" y="280" width="20" height="25" fill="#00b8ff" opacity="0.7"/>
+                    <rect x="920" y="260" width="20" height="25" fill="#00ff9d" opacity="0.7"/>
+                    <rect x="970" y="300" width="20" height="25" fill="#00b8ff" opacity="0.7"/>
+                    
+                    <!-- Road with lane markings -->
+                    <rect x="0" y="550" width="1400" height="150" fill="#0a0a0a"/>
+                    <rect x="0" y="620" width="1400" height="6" fill="#444" opacity="0.4"/>
+                    <rect x="100" y="620" width="80" height="6" fill="#FFD700" opacity="0.6"/>
+                    <rect x="300" y="620" width="80" height="6" fill="#FFD700" opacity="0.6"/>
+                    <rect x="500" y="620" width="80" height="6" fill="#FFD700" opacity="0.6"/>
+                    
+                    <!-- WULF car (larger, more detailed) -->
+                    <ellipse cx="700" cy="570" rx="350" ry="100" fill="url(#wulfGrad)" opacity="0.9"/>
+                    <rect x="450" y="520" width="500" height="80" fill="url(#wulfGrad)" rx="40"/>
+                    
+                    <!-- Windscreen -->
+                    <path d="M 550 530 L 600 490 L 800 490 L 850 530" fill="#00b8ff" opacity="0.5"/>
+                    
+                    <!-- Side turbine intakes (glowing) -->
+                    <circle cx="500" cy="560" r="35" fill="#00ff9d" opacity="0.8">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="900" cy="560" r="35" fill="#00ff9d" opacity="0.8">
+                        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- Turbine centers -->
+                    <circle cx="500" cy="560" r="20" fill="#fff" opacity="0.6"/>
+                    <circle cx="900" cy="560" r="20" fill="#fff" opacity="0.6"/>
+                    
+                    <!-- Wheels -->
+                    <circle cx="520" cy="650" r="50" fill="#111" stroke="#00ff9d" stroke-width="4"/>
+                    <circle cx="880" cy="650" r="50" fill="#111" stroke="#00ff9d" stroke-width="4"/>
+                    <circle cx="520" cy="650" r="25" fill="#222" stroke="#00ff9d" stroke-width="2"/>
+                    <circle cx="880" cy="650" r="25" fill="#222" stroke="#00ff9d" stroke-width="2"/>
+                    
+                    <!-- Energy aura -->
+                    <ellipse cx="700" cy="570" rx="380" ry="120" fill="none" stroke="#00ff9d" stroke-width="3" opacity="0.3">
+                        <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
+                        <animate attributeName="rx" values="380;400;380" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <!-- Headlights -->
+                    <ellipse cx="380" cy="570" rx="30" ry="15" fill="#fff" opacity="0.8"/>
+                    <ellipse cx="380" cy="570" rx="60" ry="30" fill="#fff" opacity="0.3"/>
+                    
+                    <!-- Text -->
+                    <text x="700" y="120" font-family="Arial Black" font-size="72" fill="url(#wulfGrad)" text-anchor="middle" font-weight="900">WULF</text>
+                    <text x="700" y="170" font-family="Arial" font-size="32" fill="#00ff9d" text-anchor="middle" opacity="0.8">FUTURE OF MOBILITY</text>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">The WULF Anatomy</h2>
+            <p style="text-align: center; color: #aaa; font-size: 1.2em; max-width: 800px; margin: 0 auto;">
+                The core of the WULF EV is its revolutionary Kinetic Recovery System. 
+                Unlike standard EVs that only rely on regenerative braking, the WULF harvests energy from the wind itself.
+            </p>
+            
+            <div class="anatomy-grid">
+                <div class="anatomy-card">
+                    <h3>🌪️ Side-Panel Intake Turbines</h3>
+                    <p>Strategically placed along the "waist" of the car where airflow is most compressed. As the car moves, air is forced through internal micro-turbines.</p>
+                </div>
+                
+                <div class="anatomy-card">
+                    <h3>⚡ Energy Transformation</h3>
+                    <p>These turbines spin at high RPMs, converting air resistance (drag) into supplemental electricity that powers your journey.</p>
+                </div>
+                
+                <div class="anatomy-card">
+                    <h3>🔄 Bypass Duct System</h3>
+                    <p>A specialized internal duct prevents the turbines from creating excessive drag, ensuring energy gained is greater than energy lost to wind resistance.</p>
+                </div>
+                
+                <div class="anatomy-card">
+                    <h3>🔋 Buffer Battery Floor</h3>
+                    <p>A solid-state battery layer stores harvested energy instantly, extending the car's range by an estimated 15–20% compared to traditional EVs.</p>
+                </div>
+                
+                <div class="anatomy-card">
+                    <h3>☀️ Solar Panel Integration</h3>
+                    <p>High-efficiency solar cells integrated into the roof capture sunlight, providing additional renewable energy while parked or driving.</p>
+                </div>
+                
+                <div class="anatomy-card">
+                    <h3>🧠 Smart Energy Management</h3>
+                    <p>Advanced EMS prioritizes energy sources (solar, wind, regen) and optimizes power distribution for maximum efficiency and range.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Crisis Section -->
+    <section class="crisis">
+        <div class="container">
+            <h2 class="section-title">The Global Crisis</h2>
+            <p style="text-align: center; color: #aaa; font-size: 1.2em; max-width: 900px; margin: 0 auto;">
+                Our planet is at a critical juncture. Transportation pollution is one of the largest contributors to climate change, 
+                and traditional vehicles are devastating our environment.
+            </p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">15%</div>
+                    <div class="stat-label">of global CO₂ emissions from road transport</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">3B</div>
+                    <div class="stat-label">tonnes of CO₂ from passenger cars yearly</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">75-84%</div>
+                    <div class="stat-label">energy wasted as heat in petrol cars</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">25%</div>
+                    <div class="stat-label">of energy-related emissions from transport</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section class="impact">
+        <div class="container">
+            <h2 class="section-title">The WULF Impact</h2>
+            <p style="text-align: center; color: #aaa; font-size: 1.2em; max-width: 900px; margin: 0 auto; margin-bottom: 20px;">
+                If WULF EV technology becomes the global standard, here's the future we're building:
+            </p>
+            
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <h3>Environmental Revolution</h3>
+                    <ul>
+                        <li>73% reduction in CO₂ output vs petrol cars over lifetime</li>
+                        <li>Grid independence reduces indirect coal/gas pollution</li>
+                        <li>Zero tailpipe emissions eliminate urban smog</li>
+                        <li>Cleaner air saves millions from respiratory diseases</li>
+                    </ul>
+                </div>
+                
+                <div class="impact-card">
+                    <h3>Social Transformation</h3>
+                    <ul>
+                        <li>Eliminates range anxiety for longer journeys</li>
+                        <li>Makes EVs viable for rural and developing regions</li>
+                        <li>No dependency on charging infrastructure</li>
+                        <li>Accessible clean mobility for all communities</li>
+                    </ul>
+                </div>
+                
+                <div class="impact-card">
+                    <h3>Quality of Life</h3>
+                    <ul>
+                        <li>Futuristic turbine hum replaces engine roar</li>
+                        <li>Quieter, more peaceful cities</li>
+                        <li>Reduced noise pollution in urban areas</li>
+                        <li>Sustainable future for next generations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section class="founder">
+        <div class="container">
+            <h2 class="section-title">Meet the Founder</h2>
+            
+            <div class="founder-content">
+                <div class="founder-image">AR</div>
+                
+                <div class="founder-details">
+                    <h3>Amrishnu R</h3>
+                    <p class="role">Founder & Innovator</p>
+                    <p><strong>Born:</strong> July 30, 2008</p>
+                    <p><strong>Age:</strong> 17</p>
+                    <p><strong>Nationality:</strong> Indian</p>
+                    <p><strong>Focus:</strong> Clean mobility, electric vehicles, renewable energy systems, sustainable engineering</p>
+                    <p><strong>Skills:</strong> Concept design, innovation ideation, systems thinking, sustainability planning</p>
+                    
+                    <div class="vision-quote">
+                        "To build self-sustaining electric mobility systems that reduce dependence on external charging and fossil fuels. 
+                        The future of transportation isn't just electric—it's autonomous in energy creation."
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-tagline">WULF — BE UNIQUE</div>
+        <p>&copy; 2026 WULF. Pioneering the future of sustainable mobility.</p>
+        <p style="margin-top: 10px; color: #444;">Harvesting the wind. Powering the future.</p>
+    </footer>
+    </div>
+    <!-- End Main Content -->
+
+    <script>
+        // User authentication system
+        let users = {}; // Stores user data in memory
+        let pendingVerification = {}; // Stores verification codes
+        let currentUser = null;
+
+        // Generate 6-digit verification code
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Simulate sending email (in production, this would call your backend API)
+        async function sendVerificationEmail(email, code) {
+            // In a real application, you would send this to your backend
+            // which would use a service like SendGrid, AWS SES, or Mailgun
+            console.log(`📧 Verification email sent to ${email}`);
+            console.log(`🔑 Verification code: ${code}`);
+            
+            // Simulate email delay
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Check if user is already logged in
+        function checkAuth() {
+            const savedUser = sessionStorage.getItem('wulfUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainContent();
+            }
+        }
+
+        // Show signup form
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('verificationForm').style.display = 'none';
+            clearErrors();
+        }
+
+        // Show login form
+        function showLogin() {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('verificationForm').style.display = 'none';
+            clearErrors();
+        }
+
+        // Show verification form
+        function showVerification(email) {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('verificationForm').style.display = 'block';
+            document.getElementById('verifyEmail').textContent = email;
+            clearErrors();
+        }
+
+        // Clear all error and success messages
+        function clearErrors() {
+            document.querySelectorAll('.auth-error, .auth-success').forEach(el => {
+                el.classList.remove('show');
+                el.textContent = '';
+            });
+        }
+
+        // Handle signup
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value.toLowerCase();
+            const password = document.getElementById('signupPassword').value;
+            const errorDiv = document.getElementById('signupError');
+            const successDiv = document.getElementById('signupSuccess');
+
+            clearErrors();
+
+            // Check if user already exists
+            if (users[email]) {
+                errorDiv.textContent = 'An account with this email already exists. Please sign in.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            // Generate verification code
+            const verificationCode = generateVerificationCode();
+            
+            // Store pending user data
+            pendingVerification[email] = {
+                name,
+                email,
+                password,
+                code: verificationCode,
+                timestamp: Date.now()
+            };
+
+            // Show success message
+            successDiv.textContent = '✓ Sending verification code...';
+            successDiv.classList.add('show');
+
+            // Send verification email
+            await sendVerificationEmail(email, verificationCode);
+
+            // Show verification screen
+            setTimeout(() => {
+                showVerification(email);
+            }, 1000);
+        }
+
+        // Handle verification
+        function handleVerification(event) {
+            event.preventDefault();
+            const code = document.getElementById('verificationCode').value;
+            const email = document.getElementById('verifyEmail').textContent;
+            const errorDiv = document.getElementById('verifyError');
+            const successDiv = document.getElementById('verifySuccess');
+
+            clearErrors();
+
+            // Check if verification data exists
+            if (!pendingVerification[email]) {
+                errorDiv.textContent = 'Verification session expired. Please sign up again.';
+                errorDiv.classList.add('show');
+                setTimeout(showSignup, 2000);
+                return;
+            }
+
+            // Check if code matches
+            if (pendingVerification[email].code !== code) {
+                errorDiv.textContent = 'Invalid verification code. Please try again.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            // Verification successful - create user account
+            const userData = pendingVerification[email];
+            users[email] = {
+                name: userData.name,
+                email: userData.email,
+                password: userData.password,
+                verified: true
+            };
+
+            // Clean up pending verification
+            delete pendingVerification[email];
+
+            // Show success and auto login
+            successDiv.textContent = '✓ Email verified successfully! Logging you in...';
+            successDiv.classList.add('show');
+
+            setTimeout(() => {
+                currentUser = { name: users[email].name, email };
+                sessionStorage.setItem('wulfUser', JSON.stringify(currentUser));
+                showMainContent();
+            }, 1500);
+        }
+
+        // Resend verification code
+        async function resendCode() {
+            const email = document.getElementById('verifyEmail').textContent;
+            const successDiv = document.getElementById('verifySuccess');
+            const errorDiv = document.getElementById('verifyError');
+
+            clearErrors();
+
+            if (!pendingVerification[email]) {
+                errorDiv.textContent = 'Session expired. Please sign up again.';
+                errorDiv.classList.add('show');
+                setTimeout(showSignup, 2000);
+                return;
+            }
+
+            // Generate new code
+            const newCode = generateVerificationCode();
+            pendingVerification[email].code = newCode;
+            pendingVerification[email].timestamp = Date.now();
+
+            // Show sending message
+            successDiv.textContent = '📧 Resending verification code...';
+            successDiv.classList.add('show');
+
+            // Send new code
+            await sendVerificationEmail(email, newCode);
+
+            // Update message
+            successDiv.textContent = '✓ New verification code sent to your email!';
+        }
+
+        // Handle login
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            clearErrors();
+
+            // Check credentials
+            if (!users[email]) {
+                errorDiv.textContent = 'No account found with this email. Please sign up.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (!users[email].verified) {
+                errorDiv.textContent = 'Please verify your email before signing in.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (users[email].password !== password) {
+                errorDiv.textContent = 'Incorrect password. Please try again.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            // Login successful
+            currentUser = { name: users[email].name, email };
+            sessionStorage.setItem('wulfUser', JSON.stringify(currentUser));
+            
+            showMainContent();
+        }
+
+        // Show main content
+        function showMainContent() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('visible');
+            
+            // Update profile UI
+            updateProfileUI();
+        }
+        
+        // Update profile UI with user data
+        function updateProfileUI() {
+            if (!currentUser) return;
+            
+            const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            const memberSince = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            
+            // Update small profile button
+            document.getElementById('profileAvatarSmall').textContent = initials;
+            document.getElementById('profileNameSmall').textContent = currentUser.name;
+            document.getElementById('profileEmailSmall').textContent = currentUser.email;
+            
+            // Update large profile dropdown
+            document.getElementById('profileAvatarLarge').textContent = initials;
+            document.getElementById('profileNameLarge').textContent = currentUser.name;
+            document.getElementById('profileEmailLarge').textContent = currentUser.email;
+            document.getElementById('memberSince').textContent = memberSince;
+        }
+        
+        // Toggle profile dropdown
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const profileButton = document.querySelector('.profile-button');
+            
+            if (dropdown && profileButton && 
+                !dropdown.contains(event.target) && 
+                !profileButton.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        // Handle logout
+        function handleLogout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                currentUser = null;
+                sessionStorage.removeItem('wulfUser');
+                location.reload();
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero');
+            if (parallax) {
+                parallax.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+
+        // Gallery hover effects
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.02)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
